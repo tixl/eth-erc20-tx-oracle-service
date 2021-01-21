@@ -1,0 +1,9 @@
+node_modules/
+error.log
+.env*
+/tmp
+/lib
+dockerBuild.npmrc
+/mount
+.idea
+.vscode
