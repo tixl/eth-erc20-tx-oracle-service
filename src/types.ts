@@ -11,10 +11,10 @@ export type CreateTransactionResponse = {
 export interface TransactionServiceHandlers {
   createTransaction: (transactionData: AssetTransactionData[]) => Promise<CreateTransactionResponse>;
   signAndSendTransaction: (
-    partialTx: object,
+    partialTx: any,
     tosign: string[],
     signatures: string[],
-    publicKey: string,
+    publicKey?: string,
   ) => Promise<SignAndSendResponse>;
 }
 
@@ -60,7 +60,7 @@ export interface AssetTransactionData {
 
 export interface SignAndSendResponse {
   status: SignAndSendStatus;
-  hash?: string;
+  hash?: string | string[];
 }
 
 export interface TransactionServiceInterface {

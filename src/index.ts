@@ -1,9 +1,10 @@
 require('dotenv').config();
 import express from 'express';
-import { FullServiceHandlers, AssetTransactionData, TransactionInformation, CreateTransactionResponse } from './types';
+import { FullServiceHandlers } from './types';
 import { configureLogger, logger } from './log';
-import NodeCache from 'node-cache';
-import { Mutex } from 'async-mutex';
+import { handlers as ethHandler } from './implementations/eth';
+// import NodeCache from 'node-cache';
+// import { Mutex } from 'async-mutex';
 
 if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'local_with_logger') {
   configureLogger(
@@ -21,8 +22,6 @@ app.use(express.json());
 // TODO: Fill whitelist
 const tokenWhitelist = new Map<string, boolean>();
 
-// TODO: get Real Handlers
-const ethHandler: FullServiceHandlers = {} as FullServiceHandlers;
 const erc20Handler: FullServiceHandlers = {} as FullServiceHandlers;
 
 function getHandlerForSymbol(symbol: string): FullServiceHandlers | null {
@@ -37,7 +36,8 @@ app.get('/:symbol/oracle/transactionInfo', async (req, res) => {
   const { reference, poolAddress } = req.query;
   logger.info('Called /oracle/transactionInfo', { reference, poolAddress });
   if (!reference || !poolAddress) return res.status(400).json({ status: 'MISSING_PARAMS' });
-  return res.json({});
+  const result = await handler.oracle.getTransactionInformation(reference as string, poolAddress as string);
+  return res.json(result);
 });
 
 app.post('/:symbol/oracle/validateSignature', async (req, res) => {
@@ -48,7 +48,8 @@ app.post('/:symbol/oracle/validateSignature', async (req, res) => {
   if (!message || !address || !signature) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-  return res.json({});
+  const result = await handler.oracle.validateSignature(message as string, address, signature as string )
+  return res.json(result);
 });
 
 app.post('/:symbol/tx/create', async (req, res) => {
@@ -59,19 +60,21 @@ app.post('/:symbol/tx/create', async (req, res) => {
   if (!transactionData) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-  return res.status(500).json({ status: '' });
+  const result = await handler.transactionService.createTransaction(transactionData)
+  // TODO: Use correct status codes
+  return res.json(result);
 });
 
 app.post('/:symbol/tx/signAndSend', async (req, res) => {
   const handler = getHandlerForSymbol(req.params.symbol);
   if (handler === null) return res.status(400).json({ status: 'UNSUPPORTED_SYMBOL' });
-  const { partialTx, signatures, publicKey, tosign } = req.body;
+  const { partialTx, signatures, tosign } = req.body;
   logger.info('Called /tx/signAndSend');
-  if (!partialTx || !signatures || !publicKey || !tosign) {
+  if (!partialTx || !signatures || !tosign) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-
-  return res.status(500).json({ status: '' });
+  const result = await handler.transactionService.signAndSendTransaction(partialTx, tosign, signatures);
+  return res.json(result);
 });
 
 const port = process.env.PORT || 4000;

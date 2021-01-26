@@ -1,13 +1,18 @@
 import { TransactionInformation } from '../../../../types';
-
-const REQUIRED_CONFIRMATIONS = process.env.REQUIRED_CONFIRMATIONS || 6;
+import * as eth from '../../../../common/eth';
+import { logger } from '../../../../log';
 
 export async function getTransactionInformation(
   txReference: string,
   poolAddress: string,
 ): Promise<TransactionInformation> {
-  let result: TransactionInformation;
-  
-  return result;
+  try {
+    const txInfo = await eth.getTransactionByHash(txReference);
+    if (txInfo === null) return { status: 'ERROR' };
+    const receivedAmount = txInfo.to.toLowerCase() === poolAddress.toLowerCase() ? txInfo.amount : '0';
+    return { status: 'ACCEPTED', receivedAmount, sender: [txInfo.from] };
+  } catch (error) {
+    logger.info('Error getTransactionInformation', { error });
+    return { status: 'ERROR' };
+  }
 }
-
