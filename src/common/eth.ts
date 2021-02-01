@@ -1,6 +1,8 @@
 import Eth from 'ethjs';
 import converter from 'hex2dec';
 const erc20abi = require('./erc20abi.json');
+import axios from 'axios';
+import { BigNumber } from 'ethers';
 
 const eth = new Eth(new Eth.HttpProvider(process.env.INFURA));
 
@@ -63,4 +65,13 @@ export function createErc20TransferData(toHex: string, value: string) {
   const address = pad32Bytes(toHex.substring(2));
   const valueHex = pad32Bytes(converter.decToHex(value, { prefix: false }));
   return '0x' + method + address + valueHex;
+}
+
+export async function getGasPrice(): Promise<BigNumber | null> {
+  const gasInfo = await axios.get(
+    `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHGASSTATION_APIKEY}`,
+  );
+  if (gasInfo && gasInfo.data) {
+    return BigNumber.from(gasInfo.data.average).mul(BigNumber.from('100000000'));
+  } else return null;
 }

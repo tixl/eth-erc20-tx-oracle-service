@@ -10,18 +10,15 @@ export async function getTransactionInformation(
   if (!symbol) return { status: 'ERROR' };
   try {
     const res = await axios.get(`${process.env.ERC20_API}/${symbol}/hash/${txReference}`);
-    if (res.data) {
-      if (!res.data.transaction) {
-        return { status: 'NOT_ACCEPTED' };
-      } else {
-        const receivedAmount = res.data.transaction.receiver === poolAddress ? res.data.transaction.amount : 0;
-        return { status: 'ACCEPTED', receivedAmount, sender: [res.data.transaction.sender] };
-      }
+    if (res.data && res.data.transaction) {
+      const receivedAmount =
+        res.data.transaction.receiver.toLowerCase() === poolAddress.toLowerCase() ? res.data.transaction.amount : 0;
+      return { status: 'ACCEPTED', receivedAmount, sender: [res.data.transaction.sender] };
     } else {
-      return { status: 'ERROR' };
+      return { status: 'NOT_ACCEPTED' };
     }
   } catch (error) {
-    logger.info('Error getTransactionInformation', { error });
+    logger.warn('Error ERC20 getTransactionInformation', { error });
     return { status: 'ERROR' };
   }
 }

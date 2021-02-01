@@ -12,7 +12,7 @@ export async function getTransactionInformation(
     const receivedAmount = txInfo.to.toLowerCase() === poolAddress.toLowerCase() ? txInfo.amount : '0';
     return { status: 'ACCEPTED', receivedAmount, sender: [txInfo.from] };
   } catch (error) {
-    logger.info('Error getTransactionInformation', { error });
+    logger.info('Error ETH getTransactionInformation', { error });
     return { status: 'ERROR' };
   }
 }

@@ -1,6 +1,7 @@
 import { SignAndSendResponse } from '../../../../types';
 import * as eth from '../../../../common/eth';
 import { utils } from 'ethers';
+import { logger } from '../../../../log';
 
 export async function signAndSendTransaction(
   partialTx: Array<utils.UnsignedTransaction>,
@@ -15,6 +16,11 @@ export async function signAndSendTransaction(
     const withSignature = utils.serializeTransaction(partialTx, signature);
     return withSignature;
   });
-  const hashes = await Promise.all(txs.map(eth.sendRawTransaction));
-  return { status: 'OK', hash: hashes };
+  try {
+    const hashes = await Promise.all(txs.map(eth.sendRawTransaction));
+    return { status: 'OK', hash: hashes };
+  } catch (error) {
+    logger.warn('Error in ERC20 signAndSendTransaction', { error });
+    return { status: 'ERROR' };
+  }
 }

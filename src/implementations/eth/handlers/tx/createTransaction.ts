@@ -3,20 +3,16 @@ import { utils, BigNumber } from 'ethers';
 import * as eth from '../../../../common/eth';
 import keccak256 from 'keccak256';
 import { logger } from '../../../../log';
-import axios from 'axios';
 
 export async function createTransaction(
   transactionData: AssetTransactionData[],
 ): Promise<{ status: CreateTransactionStatus; partialTx?: object; tosign?: string[] }> {
   try {
-    const gasInfo = await axios.get(
-      `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHGASSTATION_APIKEY}`,
-    );
-    if (!gasInfo) {
-      logger.warn('Missing gas info');
+    const gasPrice = await eth.getGasPrice();
+    if (!gasPrice) {
+      logger.warn('ETH Missing gas price');
       return { status: 'ERROR' };
     }
-    const gasPrice = BigNumber.from(gasInfo.data.average).mul(BigNumber.from('100000000'));
     const txCount = await eth.getTransactionCount(transactionData[0].fromAddress);
     if (isNaN(txCount)) {
       logger.warn('Invalid nonce', { nonce: txCount });
@@ -56,7 +52,7 @@ async function createSingleTransaction(data: AssetTransactionData, nonce: number
     const hash = '0x' + keccak256(serialized).toString('hex');
     return { partialTx: tx, tosign: hash };
   } catch (error) {
-    logger.warn('Error in create single Transaction', { error });
+    logger.warn('Error in ETH create single Transaction', { error });
     throw error;
   }
 }

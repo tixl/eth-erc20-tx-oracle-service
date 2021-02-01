@@ -9,7 +9,7 @@ export type CreateTransactionResponse = {
   tosign?: string[];
 };
 export interface TransactionServiceHandlers {
-  createTransaction: (transactionData: AssetTransactionData[]) => Promise<CreateTransactionResponse>;
+  createTransaction: (transactionData: AssetTransactionData[], symbol?: string) => Promise<CreateTransactionResponse>;
   signAndSendTransaction: (
     partialTx: any,
     tosign: string[],

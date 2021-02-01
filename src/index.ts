@@ -21,13 +21,16 @@ if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'local_wit
 const app = express();
 app.use(express.json());
 
-// TODO: Fill whitelist
 const tokenWhitelist = new Map<string, boolean>();
-tokenWhitelist.set('WEENUS', true);
+
+const supportedTokensFromEnv = process.env.SUPPORTED_TOKENS;
+if (supportedTokensFromEnv) {
+  supportedTokensFromEnv.split(',').forEach((token) => tokenWhitelist.set(token.toLowerCase(), true));
+}
 
 function getHandlerForSymbol(symbol: string): FullServiceHandlers | null {
   if (symbol === 'ETH') return ethHandler;
-  else if (tokenWhitelist.has(symbol)) return erc20Handler;
+  else if (tokenWhitelist.has(symbol.toLowerCase())) return erc20Handler;
   else return null;
 }
 
@@ -37,7 +40,14 @@ app.get('/:symbol/oracle/transactionInfo', async (req, res) => {
   const { reference, poolAddress } = req.query;
   logger.info('Called /oracle/transactionInfo', { reference, poolAddress });
   if (!reference || !poolAddress) return res.status(400).json({ status: 'MISSING_PARAMS' });
-  const result = await handler.oracle.getTransactionInformation(reference as string, poolAddress as string, req.params.symbol);
+  const result = await handler.oracle.getTransactionInformation(
+    reference as string,
+    poolAddress as string,
+    req.params.symbol,
+  );
+  if (result.status === 'ERROR') {
+    return res.status(500).json(result);
+  }
   return res.json(result);
 });
 
@@ -61,8 +71,13 @@ app.post('/:symbol/tx/create', async (req, res) => {
   if (!transactionData) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-  const result = await handler.transactionService.createTransaction(transactionData);
-  // TODO: Use correct status codes
+  const result = await handler.transactionService.createTransaction(transactionData, req.params.symbol);
+  if (result.status === 'ERROR') {
+    return res.status(500).json(result);
+  }
+  if (result.status !== 'OK') {
+    return res.status(400).json(result);
+  }
   return res.json(result);
 });
 
@@ -75,6 +90,12 @@ app.post('/:symbol/tx/signAndSend', async (req, res) => {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
   const result = await handler.transactionService.signAndSendTransaction(partialTx, tosign, signatures);
+  if (result.status === 'ERROR') {
+    return res.status(500).json(result);
+  }
+  if (result.status === 'INVALID_SIGNATURES') {
+    return res.status(400).json(result);
+  }
   return res.json(result);
 });
 

@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "ts-node src/test.ts"
+    "sign": "ts-node src/sign.ts"
   },
   "dependencies": {
     "apex-logs-winston": "^1.1.0",
