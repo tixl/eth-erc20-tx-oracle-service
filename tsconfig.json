@@ -20,6 +20,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "typeRoots" : ["./node_modules/@types", "./typings", "./node_modules/@polkadot/ts"]

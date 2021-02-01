@@ -3,6 +3,8 @@ import express from 'express';
 import { FullServiceHandlers } from './types';
 import { configureLogger, logger } from './log';
 import { handlers as ethHandler } from './implementations/eth';
+import { handlers as erc20Handler } from './implementations/erc20';
+
 // import NodeCache from 'node-cache';
 // import { Mutex } from 'async-mutex';
 
@@ -21,8 +23,7 @@ app.use(express.json());
 
 // TODO: Fill whitelist
 const tokenWhitelist = new Map<string, boolean>();
-
-const erc20Handler: FullServiceHandlers = {} as FullServiceHandlers;
+tokenWhitelist.set('WEENUS', true);
 
 function getHandlerForSymbol(symbol: string): FullServiceHandlers | null {
   if (symbol === 'ETH') return ethHandler;
@@ -36,7 +37,7 @@ app.get('/:symbol/oracle/transactionInfo', async (req, res) => {
   const { reference, poolAddress } = req.query;
   logger.info('Called /oracle/transactionInfo', { reference, poolAddress });
   if (!reference || !poolAddress) return res.status(400).json({ status: 'MISSING_PARAMS' });
-  const result = await handler.oracle.getTransactionInformation(reference as string, poolAddress as string);
+  const result = await handler.oracle.getTransactionInformation(reference as string, poolAddress as string, req.params.symbol);
   return res.json(result);
 });
 
@@ -48,7 +49,7 @@ app.post('/:symbol/oracle/validateSignature', async (req, res) => {
   if (!message || !address || !signature) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-  const result = await handler.oracle.validateSignature(message as string, address, signature as string )
+  const result = await handler.oracle.validateSignature(message as string, address, signature as string);
   return res.json(result);
 });
 
@@ -60,7 +61,7 @@ app.post('/:symbol/tx/create', async (req, res) => {
   if (!transactionData) {
     return res.status(400).json({ status: 'MISSING_BODY' });
   }
-  const result = await handler.transactionService.createTransaction(transactionData)
+  const result = await handler.transactionService.createTransaction(transactionData);
   // TODO: Use correct status codes
   return res.json(result);
 });

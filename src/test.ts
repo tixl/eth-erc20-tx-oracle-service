@@ -1,4 +1,5 @@
 require('dotenv').config();
+// import { sendErc20Token } from './common/eth';
 import { Wallet } from 'ethers';
 import { joinSignature } from '@ethersproject/bytes';
 
@@ -6,7 +7,8 @@ import { joinSignature } from '@ethersproject/bytes';
   const w = Wallet.fromMnemonic(process.env.MNEMONIC!);
 
   console.log('Wallet address', await w.getAddress());
-  const tosign = '0x6a575b50f9947c02f225b34df5d0d79bdd1ef6859a11cf989b1d3b1d4b0b5308';
+  const tosign = '0xb0fbca2fa177026d39ab2155155237573fbd130fab9eead32217043f78963101';
   const signature = await w._signingKey().signDigest(tosign);
   console.log('signature', joinSignature(signature));
+
 })();

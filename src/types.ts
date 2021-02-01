@@ -1,5 +1,5 @@
 export interface OracleHandlers {
-  getTransactionInformation: (txReference: string, poolAddress: string) => Promise<TransactionInformation>;
+  getTransactionInformation: (txReference: string, poolAddress: string, symbol?: string) => Promise<TransactionInformation>;
   validateSignature: (message: string, address: string[], signature: string) => Promise<boolean>;
 }
 
@@ -33,7 +33,11 @@ export interface TransactionInformation {
 export interface OracleInterface {
   assetSymbol: string;
   // txReference is the information passed with the deposit block. For BTC it is the transaction hash
-  getTransactionInformation: (txReference: string, poolAddress: string) => Promise<TransactionInformation>;
+  getTransactionInformation: (
+    txReference: string,
+    poolAddress: string,
+    symbol: string | null,
+  ) => Promise<TransactionInformation>;
   validateSignature: (message: string, address: string, signature: string) => Promise<boolean>;
 }
 
