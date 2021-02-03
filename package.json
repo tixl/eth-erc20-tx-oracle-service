@@ -8,6 +8,7 @@
     "sign": "ts-node src/sign.ts"
   },
   "dependencies": {
+    "@ethersproject/transactions": "^5.0.10",
     "apex-logs-winston": "^1.1.0",
     "async-mutex": "^0.2.6",
     "axios": "^0.21.1",
