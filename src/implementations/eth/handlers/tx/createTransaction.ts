@@ -50,7 +50,7 @@ async function createSingleTransaction(data: AssetTransactionData, nonce: number
     };
     const serialized = utils.serializeTransaction(tx);
     const hash = '0x' + keccak256(serialized).toString('hex');
-    return { partialTx: tx, tosign: hash };
+    return { partialTx: tx, tosign: hash.substr(2) };
   } catch (error) {
     logger.warn('Error in ETH create single Transaction', { error });
     throw error;

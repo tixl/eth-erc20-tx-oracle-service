@@ -1,5 +1,9 @@
 export interface OracleHandlers {
-  getTransactionInformation: (txReference: string, poolAddress: string, symbol?: string) => Promise<TransactionInformation>;
+  getTransactionInformation: (
+    txReference: string,
+    poolAddress: string,
+    symbol?: string,
+  ) => Promise<TransactionInformation>;
   validateSignature: (message: string, address: string[], signature: string) => Promise<boolean>;
 }
 
@@ -16,6 +20,7 @@ export interface TransactionServiceHandlers {
     signatures: string[],
     publicKey?: string,
   ) => Promise<SignAndSendResponse>;
+  getTransactionFee: () => Promise<{ amount: string; symbol: string }>;
 }
 
 export type FullServiceHandlers = {

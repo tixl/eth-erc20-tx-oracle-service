@@ -26,7 +26,7 @@ export async function createTransaction(
     const transactions = await Promise.all(
       transactionData.map((data, i) => createSingleTransaction(data, Number(txCount) + i, gasPrice, symbol)),
     );
-    return { status: 'OK', partialTx: transactions.map((x) => x.partialTx), tosign: transactions.map((x) => x.tosign) };
+    return { status: 'OK', partialTx: transactions.map((x) => x.partialTx), tosign: transactions.map((x) => x.tosign.substr(2)) };
   } catch (error) {
     logger.warn('Error in ERC20 createTransaction', { error });
     return { status: 'ERROR' };

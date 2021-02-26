@@ -3,6 +3,7 @@ import { getTransactionInformation } from './handlers/oracle/getTransactionInfor
 import { validateSignature } from './handlers/oracle/validateSignature';
 import { createTransaction } from './handlers/tx/createTransaction';
 import { signAndSendTransaction } from './handlers/tx/signAndSendTransaction';
+import { getTransactionFee } from './handlers/tx/getTransactionFee';
 
 export const handlers: FullServiceHandlers = {
   oracle: {
@@ -12,5 +13,6 @@ export const handlers: FullServiceHandlers = {
   transactionService: {
     createTransaction,
     signAndSendTransaction,
+    getTransactionFee
   },
 };

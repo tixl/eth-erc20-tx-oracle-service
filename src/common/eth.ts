@@ -1,6 +1,5 @@
 import Eth from 'ethjs';
 import converter from 'hex2dec';
-const erc20abi = require('./erc20abi.json');
 import axios from 'axios';
 import { BigNumber } from 'ethers';
 
@@ -47,10 +46,6 @@ export async function estimateGas(payload: {
     return null;
   }
 }
-
-const erc20contract = eth.contract(erc20abi);
-const weenusContract = erc20contract.at('0xaFF4481D10270F50f203E0763e2597776068CBc5');
-weenusContract;
 
 function pad32Bytes(data: string) {
   var s = String(data);

@@ -168,6 +168,19 @@ app.post('/:symbol/tx/signAndSend', async (req, res) => {
   return res.json(result);
 });
 
+app.get('/:symbol/tx/fee', async (req, res) => {
+  const handler = getHandlerForSymbol(req.params.symbol);
+  if (handler === null) return res.status(400).json({ status: 'UNSUPPORTED_SYMBOL' });
+  logger.info('Called /tx/fee');
+  try {
+    const result = handler.transactionService.getTransactionFee();
+    return res.json(result);
+  } catch (error) {
+    logger.error('Erro /tx/fee', { error });
+    return res.status(500).json(error);
+  }
+});
+
 const port = process.env.PORT || 4000;
 app.listen(port);
 logger.info(`Service listening on port ${port}`);

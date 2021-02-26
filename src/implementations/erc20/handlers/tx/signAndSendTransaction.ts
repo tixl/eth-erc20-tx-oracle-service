@@ -12,7 +12,7 @@ export async function signAndSendTransaction(
     return { status: 'INVALID_SIGNATURES' };
   }
   const txs = partialTx.map((partialTx, i) => {
-    const signature = signatures[i];
+    const signature = '0x' + signatures[i];
     const withSignature = utils.serializeTransaction(partialTx, signature);
     return withSignature;
   });
