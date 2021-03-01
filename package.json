@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "sign": "ts-node src/sign.ts"
+    "sign": "ts-node src/sign.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@ethersproject/transactions": "^5.0.10",
