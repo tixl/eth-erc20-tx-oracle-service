@@ -49,4 +49,4 @@ jobs:
       uses: rtCamp/action-slack-notify@v2.0.0
       env:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        SLACK_MESSAGE: '❌ Build: BTC Oracle on ${{ steps.extract_branch.outputs.branch }} (${{ github.sha }})'
+        SLACK_MESSAGE: '❌ Build: ETH Oracle on ${{ steps.extract_branch.outputs.branch }} (${{ github.sha }})'
