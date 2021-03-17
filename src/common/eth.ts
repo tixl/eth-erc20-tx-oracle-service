@@ -5,7 +5,9 @@ import { BigNumber } from 'ethers';
 
 const eth = new Eth(new Eth.HttpProvider(process.env.INFURA));
 
-export async function getTransactionByHash(hash: string): Promise<{ from: string; to: string; amount: string } | null> {
+export async function getTransactionByHash(
+  hash: string,
+): Promise<{ from: string; to: string; amount: string; blockNumber: string | null } | null> {
   const result = await eth.getTransactionByHash(hash);
   if (!result) return null;
   else
@@ -13,7 +15,14 @@ export async function getTransactionByHash(hash: string): Promise<{ from: string
       from: result.from,
       to: result.to,
       amount: result.value.toString(10, 0),
+      blockNumber: result.blockNumber ? result.blockNumber.toString(10, 0) : null,
     };
+}
+
+export async function getBlockNumber(): Promise<string | null> {
+  const result = await eth.blockNumber();
+  if (!result) return null;
+  return result.toString(10, 0);
 }
 
 export async function sendRawTransaction(rawTx: string): Promise<any> {
