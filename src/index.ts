@@ -173,7 +173,7 @@ app.get('/:symbol/tx/fee', async (req, res) => {
   if (handler === null) return res.status(400).json({ status: 'UNSUPPORTED_SYMBOL' });
   logger.info('Called /tx/fee');
   try {
-    const result = handler.transactionService.getTransactionFee();
+    const result = await handler.transactionService.getTransactionFee();
     return res.json(result);
   } catch (error) {
     logger.error('Erro /tx/fee', { error });
