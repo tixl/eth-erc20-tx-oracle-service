@@ -39,7 +39,7 @@ async function createSingleTransaction(
   gasPrice: BigNumber,
   contract: string,
 ) {
-  const gasLimit = BigNumber.from('41395');
+  const gasLimit = BigNumber.from('60000');
   const data = await eth.createErc20TransferData(txData.toAddress, txData.amount);
   // TODO: ESTIMATE GAS
   // const opts = {
