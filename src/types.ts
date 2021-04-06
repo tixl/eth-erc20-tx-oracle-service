@@ -11,6 +11,7 @@ export type CreateTransactionResponse = {
   status: CreateTransactionStatus;
   partialTx?: PartialTransaction;
   tosign?: string[];
+  failedTxIdxs?: number[];
 };
 export interface TransactionServiceHandlers {
   createTransaction: (transactionData: AssetTransactionData[], symbol?: string) => Promise<CreateTransactionResponse>;

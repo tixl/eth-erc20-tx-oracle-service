@@ -6,7 +6,7 @@ import { logger } from '../../../../log';
 
 export async function createTransaction(
   transactionData: AssetTransactionData[],
-): Promise<{ status: CreateTransactionStatus; partialTx?: object; tosign?: string[] }> {
+): Promise<{ status: CreateTransactionStatus; partialTx?: object; tosign?: string[]; failedTxIdxs?: number[] }> {
   try {
     const gasPrice = await eth.getGasPrice();
     if (!gasPrice) {
@@ -19,9 +19,27 @@ export async function createTransaction(
       return { status: 'ERROR' };
     }
     const transactions = await Promise.all(
-      transactionData.map((data, i) => createSingleTransaction(data, Number(txCount) + i, gasPrice)),
+      transactionData.map((data, i) =>
+        createSingleTransaction(data, Number(txCount) + i, gasPrice).catch((error) => {
+          if (error === 'INSUFFICIENT_AMOUNT') {
+            return { status: 'INSUFFICIENT_FUNDS', isError: true };
+          }
+          return { status: 'ERROR', isError: true };
+        }),
+      ),
     );
-    return { status: 'OK', partialTx: transactions.map((x) => x.partialTx), tosign: transactions.map((x) => x.tosign) };
+    const successTxs = transactions.filter((x) => !x.hasOwnProperty('isError')) as {
+      partialTx: utils.UnsignedTransaction;
+      tosign: string;
+    }[];
+    const failedTxIdxs: number[] = [];
+    transactions.forEach((x, idx) => x.hasOwnProperty('isError') && failedTxIdxs.push(idx));
+    return {
+      status: 'OK',
+      partialTx: successTxs.map((x) => x.partialTx),
+      tosign: successTxs.map((x) => x.tosign),
+      failedTxIdxs,
+    };
   } catch (error) {
     logger.warn('Error in create transaction', { error });
     if (error === 'INSUFFICIENT_AMOUNT') {
