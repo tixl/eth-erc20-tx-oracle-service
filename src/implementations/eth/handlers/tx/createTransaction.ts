@@ -66,6 +66,7 @@ async function createSingleTransaction(data: AssetTransactionData, nonce: number
   const totalGas = gasLimit.mul(gasPrice);
   const value = BigNumber.from(data.amount).sub(totalGas);
   if (value.isNegative()) {
+    logger.warn('Single ETH transaciton has not enough value', { data });
     throw 'INSUFFICIENT_AMOUNT';
   }
   try {
