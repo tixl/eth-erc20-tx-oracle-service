@@ -41,18 +41,6 @@ async function createSingleTransaction(
 ) {
   const gasLimit = BigNumber.from('60000');
   const data = await eth.createErc20TransferData(txData.toAddress, txData.amount);
-  // TODO: ESTIMATE GAS
-  // const opts = {
-  //   gas: BigNumber.from('80000').toHexString(),
-  //   to: contract,
-  //   data,
-  //   gasPrice: gasPrice.toHexString(),
-  //   value: BigNumber.from('0').toHexString(),
-  // };
-  // const estimate = await eth.estimateGas(opts);
-  // console.log(JSON.stringify(opts));
-  // console.log(estimate);
-
   try {
     const tx: utils.UnsignedTransaction = {
       to: contract,

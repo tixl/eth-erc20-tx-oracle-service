@@ -18,27 +18,39 @@ export async function createTransaction(
       logger.warn('Invalid nonce', { nonce: txCount });
       return { status: 'ERROR' };
     }
-    const transactions = await Promise.all(
-      transactionData.map((data, i) =>
-        createSingleTransaction(data, Number(txCount) + i, gasPrice).catch((error) => {
-          if (error === 'INSUFFICIENT_AMOUNT') {
-            return { status: 'INSUFFICIENT_FUNDS', isError: true };
-          }
-          return { status: 'ERROR', isError: true };
-        }),
-      ),
-    );
-    const successTxs = transactions.filter((x) => !x.hasOwnProperty('isError')) as {
+    const transactions: {
       partialTx: utils.UnsignedTransaction;
       tosign: string;
-    }[];
-    const failedTxIdxs: number[] = [];
-    transactions.forEach((x, idx) => x.hasOwnProperty('isError') && failedTxIdxs.push(idx));
+    }[] = [];
+    const failedTransactions: {
+      status: string;
+      isError: boolean;
+      index: number;
+    }[] = [];
+    let index = 0;
+    let currentNonce = Number(txCount) + 1;
+    for (let txData of transactionData) {
+      try {
+        const tx = await createSingleTransaction(txData, currentNonce, gasPrice);
+        if (tx) {
+          transactions.push(tx);
+          currentNonce++;
+        }
+      } catch (error) {
+        if (error === 'INSUFFICIENT_AMOUNT') {
+          failedTransactions.push({ status: 'INSUFFICIENT_FUNDS', isError: true, index });
+        } else {
+          failedTransactions.push({ status: 'ERROR', isError: true, index });
+        }
+      }
+      index++;
+    }
+
     return {
       status: 'OK',
-      partialTx: successTxs.map((x) => x.partialTx),
-      tosign: successTxs.map((x) => x.tosign),
-      failedTxIdxs,
+      partialTx: transactions.map((x) => x.partialTx),
+      tosign: transactions.map((x) => x.tosign),
+      failedTxIdxs: failedTransactions.map((x) => x.index),
     };
   } catch (error) {
     logger.warn('Error in create transaction', { error });
