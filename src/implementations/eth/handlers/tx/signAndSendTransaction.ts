@@ -1,5 +1,5 @@
 import { SignAndSendResponse } from '../../../../types';
-// import * as eth from '../../../../common/eth';
+import * as eth from '../../../../common/eth';
 import { utils } from 'ethers';
 import { logger } from '../../../../log';
 
@@ -15,11 +15,10 @@ export async function signAndSendTransaction(
     const txs = partialTx.map((partialTx, i) => {
       const signature = '0x' + signatures[i];
       const withSignature = utils.serializeTransaction(partialTx, signature);
+      logger.info('Serialized Transaction ', { serialized: withSignature, partialTx });
       return withSignature;
     });
-    txs.forEach((tx) => logger.info('Serialized Transaction, not sending to network', { tx }));
-    // const hashes = await Promise.all(txs.map(eth.sendRawTransaction));
-    const hashes = txs.map((_) => '0x00000000000000000000000000000');
+    const hashes = await Promise.all(txs.map(eth.sendRawTransaction));
     return { status: 'OK', hash: hashes };
   } catch (error) {
     logger.warn('Error in ETH signAndSendTransaction', { error });

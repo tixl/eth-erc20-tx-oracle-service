@@ -76,6 +76,6 @@ export async function getGasPrice(): Promise<BigNumber | null> {
     `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHGASSTATION_APIKEY}`,
   );
   if (gasInfo && gasInfo.data) {
-    return BigNumber.from(gasInfo.data.average).mul(BigNumber.from('100000000'));
+    return BigNumber.from(gasInfo.data.fast).mul(BigNumber.from('100000000'));
   } else return null;
 }
