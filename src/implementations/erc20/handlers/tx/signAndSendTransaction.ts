@@ -14,6 +14,7 @@ export async function signAndSendTransaction(
   const txs = partialTx.map((partialTx, i) => {
     const signature = '0x' + signatures[i];
     const withSignature = utils.serializeTransaction(partialTx, signature);
+    logger.info('Serialized Transaction ERC20 ', { serialized: withSignature, partialTx });
     return withSignature;
   });
   try {
