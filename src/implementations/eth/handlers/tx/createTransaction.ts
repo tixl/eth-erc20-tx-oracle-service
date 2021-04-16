@@ -29,7 +29,7 @@ export async function createTransaction(
       index: number;
     }[] = [];
     let index = 0;
-    let currentNonce = Number(txCount) + 1;
+    let currentNonce = Number(txCount);
     for (let txData of transactionData) {
       try {
         const tx = await createSingleTransaction(txData, currentNonce, gasPrice);
