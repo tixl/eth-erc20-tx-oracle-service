@@ -2,6 +2,8 @@ import Eth from 'ethjs';
 import converter from 'hex2dec';
 import axios from 'axios';
 import { BigNumber } from 'ethers';
+import { Mutex } from 'async-mutex';
+import { logger } from '../log';
 
 const eth = new Eth(new Eth.HttpProvider(process.env.INFURA));
 
@@ -71,11 +73,29 @@ export function createErc20TransferData(toHex: string, value: string) {
   return '0x' + method + address + valueHex;
 }
 
+let gasPriceCache: BigNumber | null = null;
+let cacheTimestamp = 0;
+const mx = new Mutex();
+
 export async function getGasPrice(): Promise<BigNumber | null> {
-  const gasInfo = await axios.get(
-    `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHGASSTATION_APIKEY}`,
-  );
-  if (gasInfo && gasInfo.data) {
-    return BigNumber.from(gasInfo.data.fast).mul(BigNumber.from('100000000'));
-  } else return null;
+  const release = await mx.acquire();
+  try {
+    if (Date.now() - cacheTimestamp < 15000 && gasPriceCache !== null) {
+      return gasPriceCache;
+    }
+    const gasInfo = await axios.get(
+      `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHGASSTATION_APIKEY}`,
+    );
+    if (gasInfo && gasInfo.data) {
+      const gasprice = BigNumber.from(gasInfo.data.fast).mul(BigNumber.from('100000000'));
+      gasPriceCache = gasprice;
+      cacheTimestamp = Date.now();
+      return gasprice;
+    } else return null;
+  } catch (error) {
+    logger.error('Error in getGasPrice', { error });
+    return null;
+  } finally {
+    release();
+  }
 }
