@@ -18,7 +18,7 @@ export async function createTransaction(
       logger.warn('Missing gas price');
       return { status: 'ERROR' };
     }
-    const gasPrice = gasPriceRaw.mul(115).div(100);
+    const gasPrice = gasPriceRaw.mul(140).div(100);
     const txCount = await eth.getTransactionCount(transactionData[0].fromAddress);
     if (isNaN(txCount)) {
       logger.warn('Invalid nonce', { nonce: txCount });
