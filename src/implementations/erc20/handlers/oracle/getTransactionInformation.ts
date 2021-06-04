@@ -1,7 +1,6 @@
 import { TransactionInformation } from '../../../../types';
 import { logger } from '../../../../log';
 import * as eth from '../../../../common/eth';
-import axios from 'axios';
 import { BigNumber } from 'ethers';
 
 const REQUIRED_CONFIRMATIONS = process.env.REQUIRED_CONFIRMATIONS || '12';
@@ -18,19 +17,21 @@ export async function getTransactionInformation(
 ): Promise<TransactionInformation> {
   if (!symbol) return { status: 'ERROR' };
   try {
-    const res = await axios.get(`${process.env.ERC20_API}/${symbol}/hash/${txReference}`);
-    const blockNumber = await eth.getBlockNumber();
-    if (blockNumber === null) return { status: 'ERROR' };
-    if (res.data && res.data.transaction) {
-      if (res.data.transaction.block && hasEnoughConfirmations(blockNumber, String(res.data.transaction.block))) {
-        const receivedAmount =
-          res.data.transaction.receiver.toLowerCase() === poolAddress.toLowerCase() ? res.data.transaction.amount : 0;
-        return { status: 'ACCEPTED', receivedAmount, sender: [res.data.transaction.sender] };
-      } else return { status: 'PENDING' };
-    } else {
+    const transfer = await eth.getERC20TransferByHash(txReference);
+    if (symbol.toLowerCase() !== transfer.symbol.toLowerCase()) {
+      logger.warn('ERC20: Symbol mismatch', { symbol, txSymbol: transfer.symbol });
       return { status: 'NOT_ACCEPTED' };
     }
+    const blockNumber = await eth.getBlockNumber();
+    if (blockNumber === null) return { status: 'ERROR' };
+    if (transfer.block && hasEnoughConfirmations(blockNumber, String(transfer.block))) {
+      const receivedAmount = transfer.receiver.toLowerCase() === poolAddress.toLowerCase() ? transfer.amount : '0';
+      return { status: 'ACCEPTED', receivedAmount, sender: [transfer.sender] };
+    } else return { status: 'PENDING' };
   } catch (error) {
+    if (error === eth.ERROR_TRANSACTION_NOT_ERC20_TRANSFER || error === eth.ERROR_TRANSACTION_NOT_FOUND) {
+      return { status: 'NOT_ACCEPTED' };
+    }
     logger.warn('Error ERC20 getTransactionInformation', { error });
     return { status: 'ERROR' };
   }

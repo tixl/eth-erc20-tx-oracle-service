@@ -9,13 +9,14 @@ const eth = new Eth(new Eth.HttpProvider(process.env.INFURA));
 
 export async function getTransactionByHash(
   hash: string,
-): Promise<{ from: string; to: string; amount: string; blockNumber: string | null } | null> {
+): Promise<{ from: string; to: string; amount: string; blockNumber: string | null; input: string } | null> {
   const result = await eth.getTransactionByHash(hash);
   if (!result) return null;
   else
     return {
       from: result.from,
       to: result.to,
+      input: result.input,
       amount: result.value.toString(10, 0),
       blockNumber: result.blockNumber ? result.blockNumber.toString(10, 0) : null,
     };
@@ -99,3 +100,32 @@ export async function getGasPrice(): Promise<BigNumber | null> {
     release();
   }
 }
+
+export function getReceiverAndAmountFromInputData(inputData: string) {
+  const receiver = `0x${inputData.slice(34, 74)}`;
+  const amount = converter.hexToDec(inputData.slice(74));
+  return { receiver, amount };
+}
+
+export const ERROR_TRANSACTION_NOT_FOUND = "TRANSACTION_NOT_FOUND";
+export const ERROR_TRANSACTION_NOT_ERC20_TRANSFER =
+  "TRANSACTION_NOT_ERC20_TRANSFER";
+
+export async function getERC20TransferByHash(hash: string) {
+  const ethTxData = await eth.getTransactionByHash(hash);
+  if (ethTxData === null) throw ERROR_TRANSACTION_NOT_FOUND;
+  if (
+    ethTxData.input.length !== 138 ||
+    ethTxData.input.slice(2, 10) !== "a9059cbb"
+  ) {
+    throw ERROR_TRANSACTION_NOT_ERC20_TRANSFER;
+  }
+  const { receiver, amount } = getReceiverAndAmountFromInputData(
+    ethTxData.input
+  );
+  const symbol = ethTxData.to;
+  const block = Number(ethTxData.blockNumber);
+  const sender = ethTxData.from;
+  return { receiver, amount, symbol, hash, block, sender };
+}
+
