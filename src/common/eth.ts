@@ -35,7 +35,7 @@ export async function sendRawTransaction(rawTx: string): Promise<any> {
 }
 
 export async function getTransactionCount(address: string): Promise<any> {
-  const result = await eth.getTransactionCount(address, 'latest');
+  const result = await eth.getTransactionCount(address, 'pending');
   if (!result) return null;
   else return result.toString(10);
 }
