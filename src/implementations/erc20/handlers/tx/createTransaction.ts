@@ -40,7 +40,7 @@ async function createSingleTransaction(
   gasPrice: BigNumber,
   contract: string,
 ) {
-  const gasLimit = BigNumber.from('60000');
+  const gasLimit = BigNumber.from('100000');
   const data = await eth.createErc20TransferData(txData.toAddress, txData.amount);
   try {
     const tx: utils.UnsignedTransaction = {
